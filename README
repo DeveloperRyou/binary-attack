@@ -19,4 +19,14 @@ Overflow stack from ret with
     0x4012b0 : rax += 0x3b
     0x40134c : syscall
 
-
+exploitme-safestack :
+Use stack overflow vulnerability to change process flow.
+To call execve, I use syscall with
+    rax : 0x3B, rdi : "/bin/sh", rsi : NULL, rdx : NULL
+To put this value to register, I use COP.
+In main, It calls rcx register and loop.
+So I overwrite memory with
+    0x402b40 : rax = 0
+    0x402b80 : rax = 0x3b
+    0x402ac0 : rax = "/bin/sh"
+    0x402c30 : syscall2 garget (rsi = '/bin/sh', rdi = 0x3b)
