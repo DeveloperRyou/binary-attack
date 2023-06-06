@@ -39,3 +39,9 @@ I check indirect instruction flow and than I overwrite memory with
     0x402f40 * 2 : rax += 1
     0x402f48 : rax = "/bin/sh"
     0x402f58 : syscall
+
+exploitme-safestack-cfi-aslr :
+In this case, I cannot know funtion addr because of aslr.
+So I use addr1 argument in py file.
+addr1 will be the criteria and diff between starting addr and 0x402f40 is 0x190
+I use same instruction in exploitme-safestack-cfi, but I sub 0x402f40 and add (addr1 + 0x190) to exploit
